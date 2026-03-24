@@ -1,6 +1,9 @@
 const express=require('express');
 const app = express();
 app.use(express.json());
+app.listen(8080,()=>{
+    console.log('Servidor rodando na porta 8080');
+})
 let produtos = [
   { id: 1, nome: 'Gel de Limpeza Facial', preco: 35 },
   { id: 2, nome: 'Tônico Facial', preco: 40 },
