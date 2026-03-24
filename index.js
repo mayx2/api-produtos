@@ -19,3 +19,8 @@ let produtos = [
 app.get('/produtos',(req,res)=>{
     res.json(produtos);
 })
+app.post ('/produtos', (req, res)=>{
+    const novoProduto= {id:produtos.length+1,...req.body};
+    produtos.push(novoProduto);
+    res.status(201).json(novoProduto)
+})
