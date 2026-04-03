@@ -19,5 +19,10 @@ jobs:
         run: npm install
         
       - name: Rodando o sistema
-        run: node index.js
+        run: |
+          node index.js &            
+          SERVER_PID=$!              
+          echo "Servidor rodando por 10 segundos..."
+          sleep 10                   
+          kill $SERVER_PID       
 
