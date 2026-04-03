@@ -25,12 +25,14 @@ Adiciona um prodduto à lista de produtos.
 
 ## Workflow utilizado
 
-Usei o Git Feature Branch Workflow.
+Usei o GitHub Flow.
 
-Escolhi esse modelo porque ele é mais simples e foi o que eu mais entendi, além de ser bem parecido com a forma que eu já estava acostumada a trabalhar.
+Funciona assim:
 
-Nesse modelo, a gente trabalha a partir da main, então os dados estão sempre atualizados, mas em uma branch separada. Isso é bom porque não corre o risco de dar erro direto na main.
+Crio uma branch separada a partir da main para fazer a funcionalidade ou correção.
+Trabalho nessa branch e faço commits nela, mantendo a main sempre estável.
+Quando termino, abro um Pull Request para revisar o código.
+Depois que está tudo certo, faço merge para a main.
 
-Também tem a parte do Pull Request, onde dá pra pedir uma revisão do código. Então o código só vai pra main depois que estiver tudo certo.
+O bom desse modelo é que a main fica sempre atualizada e estável, e você consegue revisar o código antes de ir pra produção. No geral, é parecido com o que eu já fazia antes, mas agora de forma mais organizada.
 
-No geral, é bem parecido com o que  já fazia, só que agora de forma mais organizada, criando a branch, fazendo tudo nela e só depois passando pra main quando estiver funcionando.
