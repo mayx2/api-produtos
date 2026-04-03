@@ -25,3 +25,9 @@ app.post('/produtos', (req, res) => {
 
   res.status(201).json(novoProduto);
 });
+app.delete("/produtos", (req, res) => {
+  const { id } = req.body;
+  produtos = produtos.filter((produto) => produto.id !== id);
+  fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
+  res.json({ mensagem: `Produto com id ${id} removido com sucesso!` });
+});
