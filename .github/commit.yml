@@ -1,0 +1,23 @@
+name: commit-workflow
+run-name: ${{github.actor}} está commitando 
+on: [push]
+jobs: 
+  executar-projeto:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonando o repositorio e trocando para a branch "especifica"
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Instalando o node versão 22
+        uses: actions/setup-node@v6
+        with: 
+          node-version: 22
+
+      - name: Instalando as dependencias
+        run: npm install
+        
+      - name: Rodando o sistema
+        run: node index.js
+
