@@ -19,5 +19,8 @@ jobs:
         run: npm install
         
       - name: Rodando o sistema
-        run: node index.js
+        run: node index.js &         
+          SERVER_PID=$!           
+          sleep 10                
+          kill $SERVER_PID          
 

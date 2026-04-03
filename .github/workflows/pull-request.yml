@@ -1,8 +1,8 @@
 name: commit-workflow
-run-name: ${{github.actor}} está commitando 
+run-name: ${{github.actor}} está commitando
 on: [pull_request]
-  
-jobs: 
+
+jobs:
   executar-projeto:
     runs-on: ubuntu-latest
     steps:
@@ -13,11 +13,14 @@ jobs:
 
       - name: Instalando o node versão 22
         uses: actions/setup-node@v6
-        with: 
+        with:
           node-version: 22
 
       - name: Instalando as dependencias
         run: npm install
-        
+
       - name: Rodando o sistema
-        run: node index.js
+        run: node index.js &
+          SERVER_PID=$!
+          sleep 10
+          kill $SERVER_PID
