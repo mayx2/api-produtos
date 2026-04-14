@@ -34,3 +34,5 @@ Nesse modelo, a gente trabalha a partir da main, então os dados estão sempre a
 Também tem a parte do Pull Request, onde dá pra pedir uma revisão do código. Então o código só vai pra main depois que estiver tudo certo.
 
 No geral, é bem parecido com o que  já fazia, só que agora de forma mais organizada, criando a branch, fazendo tudo nela e só depois passando pra main quando estiver funcionando.
+
+Adicionamos automação de testes de rotas que é executada automaticamente pelo Jenkins.
