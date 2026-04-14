@@ -4,20 +4,20 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                sh 'node --version'
-                sh 'npm --version'
+                bat 'node --version'
+                bat 'npm --version'
             }
         }
 
         stage('install') {
             steps {
-                sh 'npm install'
+                bat 'npm install'
             }
         }
 
         stage('test') {
             steps {
-                sh 'npm test || echo "Sem testes definidos"'
+                bat 'npm test || echo Sem testes definidos'
             }
         }
     }
