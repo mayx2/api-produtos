@@ -5,11 +5,11 @@ const fs = require('fs');
 
 describe('Testes de Cobertura - API Produtos', () => {
   
-  // Limpa o arquivo antes de cada teste
+  
   beforeEach(() => {
     fs.writeFileSync('produtos.json', JSON.stringify([{ id: 100, nome: 'Retinol test', preco: 10 }]));
   });
-  
+
   test('lerProdutos deve tratar erro de leitura', () => {
   jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
     throw new Error('erro forçado');
