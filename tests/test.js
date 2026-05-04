@@ -9,7 +9,17 @@ describe('Testes de Cobertura - API Produtos', () => {
   beforeEach(() => {
     fs.writeFileSync('produtos.json', JSON.stringify([{ id: 100, nome: 'Retinol test', preco: 10 }]));
   });
+  
+  test('lerProdutos deve tratar erro de leitura', () => {
+  jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
+    throw new Error('erro forçado');
+  });
 
+  jest.resetModules();
+  const app = require('../index');
+
+  expect(app).toBeDefined();
+});
   // Teste: Buscar um único produto (Sucesso)
   test('GET /produtos/:id - Deve retornar 200 para ID existente', async () => {
     const res = await request(app).get('/produtos/100');
