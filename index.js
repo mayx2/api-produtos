@@ -8,6 +8,7 @@ const lerProdutos = () => {
     const dado = fs.readFileSync("produtos.json", "utf8");
     return JSON.parse(dado);
   } catch (err) {
+    console.error(err)
     return [];
   }
 };
@@ -40,7 +41,7 @@ app.delete("/produtos/:id", (req, res) => {
 
   if (!existe) {
     return res.status(404).json({
-      mensagem: `Produto com id ${id} não encontrado`,
+      mensagem: `Produto com id ${id} não encontrado...`,
     });
   }
 
