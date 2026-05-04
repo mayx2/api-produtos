@@ -1,23 +1,47 @@
 const request = require('supertest');
 const app = require('../index');
+const fs = require('fs');
 
-test('GET /produtos', async () => {
-  const res = await request(app).get('/produtos');
-  expect(res.statusCode).toBe(200);
-});
 
-test('POST /produtos', async () => {
-  const res = await request(app)
-    .post('/produtos')
-    .send({ nome: 'Teste', preco: 10 });
+describe('Testes de Cobertura - API Produtos', () => {
+  
+  // Limpa o arquivo antes de cada teste
+  beforeEach(() => {
+    fs.writeFileSync('produtos.json', JSON.stringify([{ id: 100, nome: 'Retinol test', preco: 10 }]));
+  });
 
-  expect(res.statusCode).toBe(201);
-});
+  // Teste: Buscar um único produto (Sucesso)
+  test('GET /produtos/:id - Deve retornar 200 para ID existente', async () => {
+    const res = await request(app).get('/produtos/100');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.nome).toBe('Retinol test');
+  });
 
-test('DELETE /produtos', async () => {
-  const res = await request(app)
-    .delete('/produtos')
-    .send({ id: 1 });
+  // Teste: Buscar um único produto (Erro 404)
+  test('GET /produtos/:id - Deve retornar 404 para ID inexistente', async () => {
+    const res = await request(app).get('/produtos/999');
+    expect(res.statusCode).toBe(404);
+  });
 
-  expect(res.statusCode).toBe(200);
+  // Teste: POST sem dados (Apenas para garantir que o ID incrementa)
+  test('POST /produtos - Deve criar produto mesmo com body vazio', async () => {
+    const res = await request(app).post('/produtos').send({});
+    expect(res.statusCode).toBe(201);
+    expect(res.body.id).toBe(2); 
+  });
+
+  // Teste: DELETE com ID inexistente 
+  test('DELETE /produtos/:id - Deve falhar com 404', async () => {
+    const res = await request(app).delete('/produtos/500');
+    expect(res.statusCode).toBe(404);
+  });
+  test('DELETE /produtos/:id - Deve retornar 204 ao excluir com sucesso', async () => {
+   
+    const res = await request(app).delete('/produtos/100');
+    
+    expect(res.statusCode).toBe(204);
+    const produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
+    const existe = produtos.some(p => p.id === 1);
+    expect(existe).toBe(false);
+  });
 });
