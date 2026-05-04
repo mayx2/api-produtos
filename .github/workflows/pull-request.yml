@@ -1,5 +1,5 @@
-name: commit-workflow
-run-name: ${{github.actor}} está commitando
+name: pull-request-workflow
+run-name: ${{github.actor}} está fazendo o pull request
 on: [pull_request]
 
 jobs:
