@@ -1,3 +1,7 @@
+name: pull-request-workflow
+run-name: ${{github.actor}} está fazendo o pull request
+on: [pull_request]
+
 jobs:
   executar-projeto:
     runs-on: ubuntu-latest
@@ -8,7 +12,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Instalando o node versão 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
@@ -17,30 +21,32 @@ jobs:
 
       - name: Rodando o sistema
         run: |
-          node index.js &
-          SERVER_PID=$!
-          sleep 10
-          kill $SERVER_PID
+          node index.js &            
+          SERVER_PID=$!              
+          echo "Servidor rodando por 10 segundos..."
+          sleep 10                   
+          kill $SERVER_PID 
 
   verificar-estilo:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonando o repositorio
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Clonando o repositorio
+          uses: actions/checkout@v4
+          with:
+            ref: ${{ github.head_ref }}
 
-      - name: Instalando o node versão 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+        - name: Instalando o node versão 22
+          uses: actions/setup-node@v4
+          with:
+            node-version: 22
 
-      - name: Instalando as dependencias
-        run: npm install
+        - name: Instalando as dependencias
+          run: npm install
 
-      - name: Verificando estilo de codificação
-        run: npm run lint
+        - name: Verificando estilo de codificação
+          run: npm run lint
 
+    
   verificar-cobertura:
     runs-on: ubuntu-latest
     steps:
@@ -58,4 +64,4 @@ jobs:
         run: npm install
 
       - name: Verificando cobertura de testes
-        run: npx jest --coverage --coverageThreshold='{"global":{"lines":90}}'
+        run: npx jest --coverage --coverageThreshold='{"global":{"lines":90}}'      
