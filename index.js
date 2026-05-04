@@ -3,11 +3,6 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-app.listen(8080, () => {
-  console.log('Servidor rodando na porta 8080');
-});
-
-
 let produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
 
 
@@ -25,9 +20,28 @@ app.post('/produtos', (req, res) => {
 
   res.status(201).json(novoProduto);
 });
-app.delete("/produtos", (req, res) => {
-  const { id } = req.body;
-  produtos = produtos.filter((produto) => produto.id !== id);
+
+app.delete("/produtos/:id", (req, res) => {
+  const { id } = req.params;
+
+  const existe = produtos.some(p => p.id === Number(id));
+
+  if (!existe) {
+    return res.status(404).json({
+      mensagem: `Produto com id ${id} não encontrado`
+    });
+  }
+
+  produtos = produtos.filter(p => p.id !== Number(id));
+
   fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
-  res.json({ mensagem: `Produto com id ${id} removido com sucesso!` });
+
+  return res.status(204).send();
 });
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(8080, () => {
+    console.log('Servidor rodando na porta 8080');
+  });
+}
