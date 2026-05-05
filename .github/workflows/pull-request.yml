@@ -6,13 +6,13 @@ jobs:
   executar-projeto:
     runs-on: ubuntu-latest
     steps:
-      - name: Clonando o repositorio e trocando para a branch "especifica"
+      - name: Clonando o repositorio
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
 
       - name: Instalando o node versão 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4  # Corrigido de v6 para v4
         with:
           node-version: 22
 
@@ -27,26 +27,25 @@ jobs:
           sleep 10                   
           kill $SERVER_PID 
 
- verificar-estilo:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Clonando o repositorio
-          uses: actions/checkout@v4
-          with:
-            ref: ${{ github.head_ref }}
+  verificar-estilo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonando o repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
-        - name: Instalando o node versão 22
-          uses: actions/setup-node@v4
-          with:
-            node-version: 22
+      - name: Instalando o node versão 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-        - name: Instalando as dependencias
-          run: npm install
+      - name: Instalando as dependencias
+        run: npm install
 
-        - name: Verificando estilo de codificação
-          run: npm run lint
+      - name: Verificando estilo de codificação
+        run: npm run lint
 
-    
   verificar-cobertura:
     runs-on: ubuntu-latest
     steps:
@@ -64,4 +63,5 @@ jobs:
         run: npm install
 
       - name: Verificando cobertura de testes
-        run: npx jest --coverage --coverageThreshold='{"global":{"lines":90}}'      
+        # Usando aspas simples para envolver o JSON e evitar erros no shell
+        run: npx jest --coverage --coverageThreshold='{"global":{"lines":90}}'
