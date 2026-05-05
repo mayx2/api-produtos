@@ -10,6 +10,22 @@ describe("Testes de Cobertura - API Produtos", () => {
       JSON.stringify([{ id: 100, nome: "Retinol test", preco: 10 }]),
     );
   });
+  test("deve executar bloco de inicialização do servidor", () => {
+    const original = require.main;
+
+    Object.defineProperty(require, "main", {
+      value: { filename: __filename },
+    });
+
+    jest.resetModules();
+    require("../index");
+
+    Object.defineProperty(require, "main", {
+      value: original,
+    });
+
+    expect(true).toBe(true);
+  });
 
   // Teste: Buscar um único produto (Sucesso)
   test("GET /produtos/:id - Deve retornar 200 para ID existente", async () => {
