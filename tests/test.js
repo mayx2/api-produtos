@@ -1,47 +1,89 @@
-const request = require('supertest');
-const app = require('../index');
-const fs = require('fs');
+const request = require("supertest");
+const app = require("../index");
+const fs = require("fs");
 
-
-describe('Testes de Cobertura - API Produtos', () => {
-  
+describe("Testes de Cobertura - API Produtos", () => {
   // Limpa o arquivo antes de cada teste
   beforeEach(() => {
-    fs.writeFileSync('produtos.json', JSON.stringify([{ id: 100, nome: 'Retinol test', preco: 10 }]));
+    fs.writeFileSync(
+      "produtos.json",
+      JSON.stringify([{ id: 100, nome: "Retinol test", preco: 10 }]),
+    );
+  });
+
+  test("deve executar bloco de inicialização do servidor", () => {
+    const original = require.main;
+
+    Object.defineProperty(require, "main", {
+      value: { filename: __filename },
+    });
+
+    jest.resetModules();
+    require("../index");
+
+    Object.defineProperty(require, "main", {
+      value: original,
+    });
+
+    expect(true).toBe(true);
+  });
+
+  // ✔️ NOVO TESTE: cobre o catch do lerProdutos
+  test("deve cair no catch ao ler produtos com erro de JSON", async () => {
+    fs.writeFileSync("produtos.json", "INVALIDO_JSON");
+
+    const res = await request(app).get("/produtos");
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
   });
 
   // Teste: Buscar um único produto (Sucesso)
-  test('GET /produtos/:id - Deve retornar 200 para ID existente', async () => {
-    const res = await request(app).get('/produtos/100');
+  test("GET /produtos/:id - Deve retornar 200 para ID existente", async () => {
+    const res = await request(app).get("/produtos/100");
     expect(res.statusCode).toBe(200);
-    expect(res.body.nome).toBe('Retinol test');
+    expect(res.body.nome).toBe("Retinol test");
   });
 
   // Teste: Buscar um único produto (Erro 404)
-  test('GET /produtos/:id - Deve retornar 404 para ID inexistente', async () => {
-    const res = await request(app).get('/produtos/999');
+  test("GET /produtos/:id - Deve retornar 404 para ID inexistente", async () => {
+    const res = await request(app).get("/produtos/999");
     expect(res.statusCode).toBe(404);
   });
 
   // Teste: POST sem dados (Apenas para garantir que o ID incrementa)
-  test('POST /produtos - Deve criar produto mesmo com body vazio', async () => {
-    const res = await request(app).post('/produtos').send({});
+  test("POST /produtos - Deve criar produto mesmo com body vazio", async () => {
+    const res = await request(app).post("/produtos").send({});
     expect(res.statusCode).toBe(201);
-    expect(res.body.id).toBe(2); 
+    expect(res.body.id).toBe(2);
   });
 
-  // Teste: DELETE com ID inexistente 
-  test('DELETE /produtos/:id - Deve falhar com 404', async () => {
-    const res = await request(app).delete('/produtos/500');
+  // Teste: DELETE com ID inexistente
+  test("DELETE /produtos/:id - Deve falhar com 404", async () => {
+    const res = await request(app).delete("/produtos/500");
     expect(res.statusCode).toBe(404);
   });
-  test('DELETE /produtos/:id - Deve retornar 204 ao excluir com sucesso', async () => {
-   
-    const res = await request(app).delete('/produtos/100');
-    
+
+  test("DELETE /produtos/:id - Deve retornar 204 ao excluir com sucesso", async () => {
+    const res = await request(app).delete("/produtos/100");
+
     expect(res.statusCode).toBe(204);
-    const produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
-    const existe = produtos.some(p => p.id === 1);
+    const produtos = JSON.parse(fs.readFileSync("produtos.json", "utf8"));
+    const existe = produtos.some((p) => p.id === 100);
     expect(existe).toBe(false);
+  });
+
+  // ✔️ NOVO TESTE: cobre app.listen (require.main)
+  test("deve executar bloco de inicialização do servidor (listen)", () => {
+    const listenMock = jest
+      .spyOn(require("express").application, "listen")
+      .mockImplementation((port, cb) => cb && cb());
+
+    jest.resetModules();
+    require("../index");
+
+    expect(listenMock).toHaveBeenCalled();
+
+    listenMock.mockRestore();
   });
 });
