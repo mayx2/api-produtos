@@ -27,7 +27,7 @@ jobs:
           sleep 10                   
           kill $SERVER_PID 
 
-    verificar-estilo:
+ verificar-estilo:
       runs-on: ubuntu-latest
       steps:
         - name: Clonando o repositorio
