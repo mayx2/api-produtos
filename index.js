@@ -15,7 +15,8 @@ const lerProdutos = () => {
 let produtos = lerProdutos();
 
 app.get("/produtos", (req, res) => {
-  res.json(produtos);
+  const listaAtualizada = lerProdutos(); 
+  res.json(listaAtualizada);
 });
 app.get('/produtos/:id', (req, res) => {
   const produtos = lerProdutos();
