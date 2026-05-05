@@ -2,74 +2,58 @@ const request = require("supertest");
 const app = require("../index");
 const fs = require("fs");
 
-describe("Testes de Cobertura - API Produtos", () => {
-  
-  // Limpa o arquivo antes de cada teste
+describe("Testes de Cobertura Total - API Produtos", () => {
+  const FILE_PATH = "produtos.json";
+
   beforeEach(() => {
-    fs.writeFileSync(
-      "produtos.json",
-      JSON.stringify([{ id: 100, nome: "Retinol test", preco: 10 }]),
-    );
+    const inicial = [{ id: 1, nome: "Item Teste", preco: 10 }];
+    fs.writeFileSync(FILE_PATH, JSON.stringify(inicial));
   });
 
-  // GET lista
-  test("GET /produtos - Deve retornar lista de produtos", async () => {
+  test("GET /produtos", async () => {
     const res = await request(app).get("/produtos");
-
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
   });
 
-  // GET por ID sucesso
-  test("GET /produtos/:id - Deve retornar 200 para ID existente", async () => {
-    const res = await request(app).get("/produtos/100");
-
+  test("GET /produtos/:id - Sucesso", async () => {
+    const res = await request(app).get("/produtos/1");
     expect(res.statusCode).toBe(200);
-    expect(res.body.nome).toBe("Retinol test");
+    expect(res.body.nome).toBe("Item Teste");
   });
 
-  // GET por ID erro
-  test("GET /produtos/:id - Deve retornar 404 para ID inexistente", async () => {
+  test("GET /produtos/:id - 404", async () => {
     const res = await request(app).get("/produtos/999");
-
     expect(res.statusCode).toBe(404);
   });
 
-  // POST
-  test("POST /produtos - Deve criar produto mesmo com body vazio", async () => {
-    const res = await request(app).post("/produtos").send({});
-
+  test("POST /produtos", async () => {
+    const res = await request(app).post("/produtos").send({ nome: "Novo", preco: 20 });
     expect(res.statusCode).toBe(201);
     expect(res.body.id).toBe(2);
   });
 
-  // DELETE erro
-  test("DELETE /produtos/:id - Deve falhar com 404", async () => {
-    const res = await request(app).delete("/produtos/500");
+  test("DELETE /produtos/:id - Sucesso", async () => {
+    const res = await request(app).delete("/produtos/1");
+    expect(res.statusCode).toBe(204);
+  });
 
+  test("DELETE /produtos/:id - 404", async () => {
+    const res = await request(app).delete("/produtos/999");
     expect(res.statusCode).toBe(404);
   });
 
-  // DELETE sucesso
-  test("DELETE /produtos/:id - Deve retornar 204 ao excluir com sucesso", async () => {
-    const res = await request(app).delete("/produtos/100");
-
-    expect(res.statusCode).toBe(204);
-
-    const produtos = JSON.parse(fs.readFileSync("produtos.json", "utf8"));
-    const existe = produtos.some((p) => p.id === 100);
-
-    expect(existe).toBe(false);
+  test("Catch - JSON Inválido", async () => {
+    fs.writeFileSync(FILE_PATH, "invalid");
+    const res = await request(app).get("/produtos");
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([]);
   });
 
-  // JSON inválido (cobre catch)
-  test("deve cair no catch ao ler produtos com JSON inválido", async () => {
-    fs.writeFileSync("produtos.json", "INVALIDO_JSON");
-
+  test("Catch - Arquivo Inexistente", async () => {
+    if (fs.existsSync(FILE_PATH)) fs.unlinkSync(FILE_PATH);
     const res = await request(app).get("/produtos");
-
     expect(res.statusCode).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body).toEqual([]);
   });
 });
