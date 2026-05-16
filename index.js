@@ -55,7 +55,7 @@ app.delete("/produtos/:id", (req, res) => {
 module.exports = app;
 
 if (require.main === module) {
-  app.listen(8080, () => {
-    console.log("Servidor rodando na porta 8080");
+  app.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
   });
 }

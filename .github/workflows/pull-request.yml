@@ -63,5 +63,4 @@ jobs:
         run: npm install
 
       - name: Verificando cobertura de testes
-        # Usando aspas simples para envolver o JSON e evitar erros no shell
         run: npx jest --coverage --coverageThreshold='{"global":{"lines":90}}'

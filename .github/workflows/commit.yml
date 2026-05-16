@@ -1,17 +1,18 @@
 name: commit-workflow
-run-name: ${{github.actor}} está commitando 
-on: [push]
-jobs: 
+run-name: ${{ github.actor }} está commitando 
+
+on: [push] 
+
+jobs:
+  # --- JOB 1: EXECUTAR O PROJETO ---
   executar-projeto:
     runs-on: ubuntu-latest
     steps:
-      - name: Clonando o repositorio e trocando para a branch "especifica"
-        uses: actions/checkout@v4
-        with:
-          ref: main
+      - name: Clonando o repositorio
+        uses: actions/checkout@v4 
 
       - name: Instalando o node versão 22
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with: 
           node-version: 22
 
@@ -26,3 +27,49 @@ jobs:
           sleep 10                   
           kill $SERVER_PID       
 
+  # --- JOB 2: CONSTRUÇÃO DA IMAGEM ---
+  build-image:
+    runs-on: ubuntu-latest
+    needs: executar-projeto 
+    steps:
+      - name: Clonando o repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir Imagem Docker (Apenas Teste)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false 
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api-produtos:test
+
+  # --- JOB 3: PUBLICAÇÃO NO DOCKERHUB ---
+  publish-image:
+    runs-on: ubuntu-latest
+    needs: build-image
+    if: github.ref == 'refs/heads/main' 
+    steps:
+      - name: Clonando o repositório
+        uses: actions/checkout@v4 
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Fazer login no DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Construir e Publicar imagem oficial
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true 
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/api-produtos:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/api-produtos:${{ github.sha }}
