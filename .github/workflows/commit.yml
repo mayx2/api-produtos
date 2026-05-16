@@ -1,7 +1,7 @@
 name: commit-workflow
 run-name: ${{ github.actor }} está commitando 
 
-on: [push] # Dispara em qualquer branch
+on: [push] 
 
 jobs:
   # --- JOB 1: EXECUTAR O PROJETO ---
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clonando o repositorio
-        uses: actions/checkout@v4 # Sem a trava 'ref: main' para ler a branch atual
+        uses: actions/checkout@v4 
 
       - name: Instalando o node versão 22
         uses: actions/setup-node@v4
@@ -30,7 +30,7 @@ jobs:
   # --- JOB 2: CONSTRUÇÃO DA IMAGEM ---
   build-image:
     runs-on: ubuntu-latest
-    needs: executar-projeto # Só roda se o primeiro job passar
+    needs: executar-projeto 
     steps:
       - name: Clonando o repositório
         uses: actions/checkout@v4
