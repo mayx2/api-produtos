@@ -1,0 +1,133 @@
+---
+- name: Configura monitoramento com Netdata
+  hosts: app
+  become: yes
+
+  tasks:
+
+    - name: Atualiza cache do apt
+      apt:
+        update_cache: yes
+
+    - name: Instala dependências
+      apt:
+        name:
+          - curl
+          - wget
+          - stress-ng
+          - msmtp
+          - msmtp-mta
+        state: present
+
+    - name: Configura msmtp para envio via Gmail
+      copy:
+        dest: /etc/msmtprc
+        mode: '0644'
+        content: |
+          defaults
+          auth           on
+          tls            on
+          tls_trust_file /etc/ssl/certs/ca-certificates.crt
+          logfile        /var/log/msmtp.log
+
+          account        gmail
+          host           smtp.gmail.com
+          port           587
+          from           {{ netdata_email }}
+          user           {{ netdata_email }}
+          password       {{ netdata_smtp_password }}
+
+          account default : gmail
+
+    - name: Garanti permissão correta do msmtprc
+      file:
+        path: /etc/msmtprc
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Verifica se Netdata já está instalado
+      command: which netdata
+      register: netdata_installed
+      ignore_errors: yes
+
+    - name: Instala Netdata
+      shell: |
+        curl -Ss https://get.netdata.cloud/kickstart.sh -o /tmp/kickstart.sh
+        bash /tmp/kickstart.sh --non-interactive --dont-start-it
+      args:
+        executable: /bin/bash
+      when: netdata_installed.rc != 0
+
+    - name:  inicia o Netdata
+      service:
+        name: netdata
+        enabled: yes
+        state: started
+
+    - name: Verifica se o arquivo de notificação existe
+      command: >
+        cp /usr/lib/netdata/conf.d/health_alarm_notify.conf
+           /etc/netdata/health_alarm_notify.conf
+      args:
+        creates: /etc/netdata/health_alarm_notify.conf
+
+    - name: Configura e-mail e SMTP para alertas
+      lineinfile:
+        path: /etc/netdata/health_alarm_notify.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - regexp: '^[#\s]*SEND_EMAIL='
+          line: 'SEND_EMAIL="YES"'
+        - regexp: '^[#\s]*DEFAULT_RECIPIENT_EMAIL='
+          line: 'DEFAULT_RECIPIENT_EMAIL="{{ netdata_email }}"'
+        - regexp: '^[#\s]*EMAIL_SENDER='
+          line: 'EMAIL_SENDER="{{ netdata_email }}"'
+        - regexp: '^[#\s]*SMTP_SERVER='
+          line: 'SMTP_SERVER="smtp.gmail.com"'
+        - regexp: '^[#\s]*SMTP_PORT='
+          line: 'SMTP_PORT="587"'
+        - regexp: '^[#\s]*SMTP_USER='
+          line: 'SMTP_USER="{{ netdata_email }}"'
+        - regexp: '^[#\s]*SMTP_PASSWORD='
+          line: 'SMTP_PASSWORD="{{ netdata_smtp_password }}"'
+        - regexp: '^[#\s]*sendmail='
+          line: 'sendmail="/usr/bin/msmtp"'
+        - regexp: '^[#\s]*EMAIL_SUBJECT='
+          line: 'EMAIL_SUBJECT="[Netdata] Alerta: ${alarm} em ${host} está ${status}"'
+
+    - name: Garante que o arquivo de alerta de CPU existe
+      command: >
+        cp /usr/lib/netdata/conf.d/health.d/cpu.conf
+           /etc/netdata/health.d/cpu.conf
+      args:
+        creates: /etc/netdata/health.d/cpu.conf
+
+    - name: Configura lookup para 1 minuto
+      replace:
+        path: /etc/netdata/health.d/cpu.conf
+        regexp: 'lookup: average -10m unaligned of user,system,softirq,irq,guest'
+        replace: 'lookup: average -1m unaligned of user,system,softirq,irq,guest,iowait,nice,steal'
+
+    - name: alerta de CPU warn em 80%
+      replace:
+        path: /etc/netdata/health.d/cpu.conf
+        regexp: 'warn: \$this > \(\(\$status >= \$WARNING\).*\)'
+        replace: 'warn: $this > (($status >= $WARNING)  ? (80) : (80))'
+
+    - name:  alerta de CPU critico em 90%
+      replace:
+        path: /etc/netdata/health.d/cpu.conf
+        regexp: 'crit: \$this > \(\(\$status == \$CRITICAL\).*\)'
+        replace: 'crit: $this > (($status == $CRITICAL) ? (90) : (90))'
+
+    - name: Recarrega alertas do Netdata
+      command: netdatacli reload-health
+      ignore_errors: yes
+
+    - name: Reinicia serviço Netdata
+      service:
+        name: netdata
+        state: restarted

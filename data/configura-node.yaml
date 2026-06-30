@@ -1,0 +1,42 @@
+---
+- name: Instalação da aplicação na VM2
+  hosts: app
+  become: yes
+
+  tasks:
+
+    - name: Instalar dependências de sistema (Git e curl)
+      apt:
+        name:
+          - git
+          - curl
+        state: present
+        update_cache: yes
+
+    - name: Corrigir pacotes quebrados
+      shell: |
+        dpkg --configure -a
+        apt --fix-broken install -y
+
+    - name: Instalar Node.js 20
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        apt install -y nodejs
+
+    - name: Verificar versão do Node
+      shell: node -v
+      register: node_version
+
+    - debug:
+        var: node_version.stdout
+
+    - name: Clonar repositório da aplicação
+      git:
+        repo: https://github.com/mayx2/api-produtos.git
+        dest: /home/vagrant/api-produtos
+        force: yes
+
+    - name: Instalar dependências da aplicação via npm
+      shell: npm install
+      args:
+        chdir: /home/vagrant/api-produtos

@@ -2,3 +2,6 @@ node_modules/
 coverage/
 .env
 .vagrant
+vm1_id_rsa.pub
+secrets.yml
+

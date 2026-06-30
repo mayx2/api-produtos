@@ -167,5 +167,4 @@ Executar o comando:
 curl http://192.168.33.11:3000/produtos
 ```
 
-```
-```
+
